@@ -14,6 +14,14 @@ struct CurrentWeather: Decodable {
     let dt: Int
     let temp: Double
     let weather: [Weather]
+    let wind_speed: Double
+    let humidity: Double
+    let visibility: Double
+    let pressure: Double
+    var primaryCondition: String? {
+        return weather.first?.main
+    }
+    let feels_like: Double
 }
 
 struct Weather: Decodable, Hashable {
@@ -25,7 +33,7 @@ struct DailyWeather: Decodable, Identifiable, Hashable {
     let dt: Int
     let temp: Temp
     let weather: [Weather]
-
+    
     var id: Int {
         return dt
     }

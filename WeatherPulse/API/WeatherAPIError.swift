@@ -14,6 +14,7 @@ enum APIError: Error {
     case jsonParsingError(Error)   // Error parsing JSON
     case invalidStatusCode(Int)    // HTTP status code indicates failure
     case custom(String)            // Custom error
+    case locationError(Error)
     
     var localizedDescription: String {
         switch self {
@@ -29,7 +30,8 @@ enum APIError: Error {
             return "Invalid Status Code: \(code)"
         case .custom(let message):
             return message
+        case .locationError(let error):
+            return "Location Error: \(error)"
         }
     }
 }
-

@@ -4,6 +4,7 @@
 //
 //  Created by Matthew Maloof on 10/23/23.
 //
+
 import Combine
 import Foundation
 
@@ -14,7 +15,7 @@ class WeatherAPI: WeatherAPIProtocol {
     
     func fetchWeather(latitude: Double, longitude: Double) -> AnyPublisher<WeatherModel, APIError> {
         
-        let url = URL(string: "https://api.openweathermap.org/data/2.5/onecall?lat=\(latitude)&lon=\(longitude)&appid=\(apiKey)")!
+        let url = URL(string: "https://api.openweathermap.org/data/3.0/onecall?lat=\(latitude)&lon=\(longitude)&appid=\(apiKey)")!
         
         return URLSession.shared.dataTaskPublisher(for: url)
             .tryMap { data, response in

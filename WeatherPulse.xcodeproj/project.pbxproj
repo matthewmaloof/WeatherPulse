@@ -23,6 +23,7 @@
 		021613AE2AE756A7008BBD79 /* WeatherAPIProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021613AD2AE756A7008BBD79 /* WeatherAPIProtocol.swift */; };
 		021613B02AE75BA0008BBD79 /* LocationManagerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021613AF2AE75BA0008BBD79 /* LocationManagerProtocol.swift */; };
 		021613B22AE76032008BBD79 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021613B12AE76032008BBD79 /* LocationManager.swift */; };
+		02DA23DF2AE8026700AC91B1 /* AdditionalWeatherInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DA23DE2AE8026700AC91B1 /* AdditionalWeatherInfoView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +63,7 @@
 		021613AD2AE756A7008BBD79 /* WeatherAPIProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherAPIProtocol.swift; sourceTree = "<group>"; };
 		021613AF2AE75BA0008BBD79 /* LocationManagerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManagerProtocol.swift; sourceTree = "<group>"; };
 		021613B12AE76032008BBD79 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
+		02DA23DE2AE8026700AC91B1 /* AdditionalWeatherInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdditionalWeatherInfoView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -162,6 +164,7 @@
 				021613A32AE752FB008BBD79 /* WeatherPulseView.swift */,
 				021613A52AE75314008BBD79 /* CurrentWeatherView.swift */,
 				021613A72AE75325008BBD79 /* DailyWeatherView.swift */,
+				02DA23DE2AE8026700AC91B1 /* AdditionalWeatherInfoView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -326,6 +329,7 @@
 				021613B22AE76032008BBD79 /* LocationManager.swift in Sources */,
 				021613AE2AE756A7008BBD79 /* WeatherAPIProtocol.swift in Sources */,
 				021613702AE74E0C008BBD79 /* WeatherPulseApp.swift in Sources */,
+				02DA23DF2AE8026700AC91B1 /* AdditionalWeatherInfoView.swift in Sources */,
 				021613A82AE75325008BBD79 /* DailyWeatherView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -492,6 +496,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"WeatherPulse/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WeatherPulse/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -520,6 +525,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"WeatherPulse/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WeatherPulse/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

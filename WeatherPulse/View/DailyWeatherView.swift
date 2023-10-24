@@ -9,16 +9,24 @@ import SwiftUI
 
 struct DailyWeatherView: View {
     var dailyWeather: DailyWeather
-    
+
     var body: some View {
         HStack {
-            Text("Date Placeholder")
+            Text("\(formattedDate(fromTimestamp: dailyWeather.dt))")
                 .bold()
             Spacer()
             Text("\(dailyWeather.temp.min, specifier: "%.1f")° - \(dailyWeather.temp.max, specifier: "%.1f")°")
-            Image(systemName: "cloud.fill")
+            Image(systemName: dailyWeather.weather.first?.icon ?? "questionmark")
                 .resizable()
                 .frame(width: 20, height: 20)
         }
     }
+    
+    // Helper function to format timestamp to date string
+    private func formattedDate(fromTimestamp timestamp: Int) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "EEEE, MMM d"
+        return dateFormatter.string(from: Date(timeIntervalSince1970: TimeInterval(timestamp)))
+    }
 }
+

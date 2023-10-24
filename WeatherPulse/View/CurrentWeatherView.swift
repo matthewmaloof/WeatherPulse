@@ -9,7 +9,7 @@ import SwiftUI
 
 struct CurrentWeatherView: View {
     var currentWeather: CurrentWeather?
-    
+
     var body: some View {
         VStack {
             Text("\(currentWeather?.temp ?? 0, specifier: "%.1f")°")
@@ -17,9 +17,9 @@ struct CurrentWeatherView: View {
                 .bold()
                 .transition(.slide)
                 .animation(.easeIn(duration: 0.5))
-            Text(currentWeather?.weather.first?.main ?? "Unknown")
+            Text(currentWeather?.primaryCondition ?? "Unknown")
                 .font(.title)
         }
+        .foregroundColor(.white)
     }
 }
-
