@@ -9,18 +9,65 @@ import SwiftUI
 import Combine
 import CoreLocation
 
+struct CityWithCoordinates: Identifiable {
+    var id = UUID()
+    var name: String
+    var latitude: Double
+    var longitude: Double
+    
+    init(name: String, latitude: Double, longitude: Double) {
+        self.name = name
+        self.latitude = latitude
+        self.longitude = longitude
+    }
+}
+
+
 struct WeatherPulseView: View {
     @ObservedObject var viewModel: WeatherViewModel
     @State private var selectedCity: String = "San Francisco"
-    @State private var showAdditionalInfo: Bool = false
     @State private var isLocationPermissionGranted = false
-    @State private var dailyWeather: [DailyWeather] = [] // Add this state
+    @State private var dailyWeather: [DailyWeather] = []
+    @State private var searchText: String = ""
+    @State private var showCitySearch = false
+    
+    private let allCities: [String] = ["San Francisco", "New York", "Chicago", "Los Angeles", "Miami",
+                                       "Houston", "Boston", "Denver", "Seattle", "Atlanta",
+                                       "Nashville", "Las Vegas", "Portland", "Philadelphia", "Orlando",
+                                       "Dallas", "Phoenix", "Austin", "San Diego", "Indianapolis",
+                                       "Columbus", "San Antonio", "Jacksonville", "Charlotte", "Detroit"]
+    
+    private let allCitiesWithCoordinates: [CityWithCoordinates] = [
+        CityWithCoordinates(name: "San Francisco", latitude: 37.7749, longitude: -122.4194),
+        CityWithCoordinates(name: "New York", latitude: 40.7128, longitude: -74.0060),
+        CityWithCoordinates(name: "Chicago", latitude: 41.8781, longitude: -87.6298),
+        CityWithCoordinates(name: "Los Angeles", latitude: 34.0522, longitude: -118.2437),
+        CityWithCoordinates(name: "Miami", latitude: 25.7617, longitude: -80.1918),
+        CityWithCoordinates(name: "Houston", latitude: 29.7604, longitude: -95.3698),
+        CityWithCoordinates(name: "Boston", latitude: 42.3601, longitude: -71.0589),
+        CityWithCoordinates(name: "Denver", latitude: 39.7392, longitude: -104.9903),
+        CityWithCoordinates(name: "Seattle", latitude: 47.6062, longitude: -122.3321),
+        CityWithCoordinates(name: "Atlanta", latitude: 33.7490, longitude: -84.3880),
+        CityWithCoordinates(name: "Nashville", latitude: 36.1627, longitude: -86.7816),
+        CityWithCoordinates(name: "Las Vegas", latitude: 36.1699, longitude: -115.1398),
+        CityWithCoordinates(name: "Portland", latitude: 45.5122, longitude: -122.6587),
+        CityWithCoordinates(name: "Philadelphia", latitude: 39.9526, longitude: -75.1652),
+        CityWithCoordinates(name: "Orlando", latitude: 28.5383, longitude: -81.3792),
+        CityWithCoordinates(name: "Dallas", latitude: 32.7767, longitude: -96.7970),
+        CityWithCoordinates(name: "Phoenix", latitude: 33.4484, longitude: -112.0740),
+        CityWithCoordinates(name: "Austin", latitude: 30.2672, longitude: -97.7431),
+        CityWithCoordinates(name: "San Diego", latitude: 32.7157, longitude: -117.1611),
+        CityWithCoordinates(name: "Indianapolis", latitude: 39.7684, longitude: -86.1581),
+        CityWithCoordinates(name: "Columbus", latitude: 39.9612, longitude: -82.9988),
+        CityWithCoordinates(name: "San Antonio", latitude: 29.4241, longitude: -98.4936),
+        CityWithCoordinates(name: "Jacksonville", latitude: 30.3322, longitude: -81.6557),
+        CityWithCoordinates(name: "Charlotte", latitude: 35.2271, longitude: -80.8431),
+        CityWithCoordinates(name: "Detroit", latitude: 42.3314, longitude: -83.0458),
+    ]
     
     
-    // Create an instance of CLLocationManager
     let locationManager = CLLocationManager()
     
-    // Dynamic background based on weather condition
     private func weatherBackground(_ condition: String) -> some View {
         switch condition {
         case "rain":
@@ -33,7 +80,6 @@ struct WeatherPulseView: View {
     }
     
     init() {
-        // Initialize the view model with the locationManager
         self.viewModel = WeatherViewModel(api: WeatherAPI(), locationManager: locationManager)
         setupLocationManager()
     }
@@ -41,74 +87,137 @@ struct WeatherPulseView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Background gradient based on weather condition
                 if let condition = viewModel.currentWeather?.weather.first?.main.lowercased() {
                     weatherBackground(condition)
                         .ignoresSafeArea()
+                        .zIndex(0) // Set the background to the lowest layer
                 }
-                VStack {
-                    Text("Weather Pulse")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Color.black.opacity(0.5))
-                        .cornerRadius(10)
-                    
-                    // City selection picker
-                    Picker("Select city", selection: $selectedCity) {
-                        ForEach(viewModel.cities, id: \.self) {
-                            Text($0)
+                
+                VStack(alignment: .leading) {
+                    HStack {
+                        WeatherPulseLogo()
+                            .padding(.top, 10)
+                            .padding(.leading, 10)
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            showCitySearch.toggle()
+                        }) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.title)
+                                .foregroundColor(.white)
+                                .padding(.trailing, 10)
+                        }
+                        .sheet(isPresented: $showCitySearch) {
+                            CitySearchView(
+                                searchText: $searchText,
+                                cities: allCities,
+                                didSelectCity: { newCity in
+                                    selectedCity = newCity
+                                    let coordinates = cityCoordinates(for: selectedCity)
+                                    viewModel.fetchWeather(latitude: coordinates.latitude, longitude: coordinates.longitude)
+                                    viewModel.fetchDailyWeather(latitude: coordinates.latitude, longitude: coordinates.longitude)
+                                },
+                                selectedCity: $selectedCity,
+                                showCitySearch: $showCitySearch
+                            )
+                        }
+                        
+                        
+                        
+                        
+                        
+                        Button(action: {
+                            let coordinates = cityCoordinates(for: selectedCity)
+                            viewModel.fetchWeather(latitude: coordinates.latitude, longitude: coordinates.longitude)
+                            viewModel.fetchDailyWeather(latitude: coordinates.latitude, longitude: coordinates.longitude)
+                        }) {
+                            Image(systemName: "arrow.clockwise.circle.fill")
+                                .font(.title)
+                                .foregroundColor(.white)
+                                .padding(.trailing, 10)
                         }
                     }
-                    .onChange(of: selectedCity) { newValue in
-                        let coordinates = cityCoordinates(for: newValue)
-                        viewModel.fetchWeather(latitude: coordinates.latitude, longitude: coordinates.longitude)
-                        
-                        // Fetch daily weather when the city changes
-                        viewModel.fetchDailyWeather(latitude: coordinates.latitude, longitude: coordinates.longitude)
-                        
-                        showAdditionalInfo = true
-                    }
-                    .pickerStyle(MenuPickerStyle())
-                    .background(Color.black.opacity(0.5))
-                    .cornerRadius(20)
                     
-                    Button("Show Additional Weather Info") {
-                        showAdditionalInfo.toggle()
-                    }
-                    .padding()
-                    .foregroundColor(.white)
-                    .background(
-                        RoundedRectangle(cornerRadius: 25)
-                            .fill(LinearGradient(gradient: Gradient(colors: [Color.blue, Color.purple]), startPoint: .leading, endPoint: .trailing))
-                            .scaleEffect(showAdditionalInfo ? 1.1 : 1.0)
-                            .animation(.spring(response: 0.5, dampingFraction: 0.5, blendDuration: 1))
-                    )
-                    .shadow(color: .gray, radius: 3, x: 0, y: 3)
-                    .sheet(isPresented: $showAdditionalInfo) {
-                        AdditionalWeatherInfoView(viewModel: viewModel)
-                    }
-                    
-                    // Current weather view
                     if let currentWeather = viewModel.currentWeather {
-                        CurrentWeatherView(currentWeather: currentWeather)
-                            .padding()
+                        VStack(alignment: .center) {
+                            Text(selectedCity)
+                                .font(.title)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 10)
+                                .padding(.bottom, 10)
+                            SearchBar(text: $searchText)
+                                .padding(.horizontal, 10)
+                            
+                            if !searchText.isEmpty {
+                                List(allCitiesWithCoordinates.filter {
+                                    $0.name.lowercased().contains(searchText.lowercased())
+                                }) { city in
+                                    Text(city.name)
+                                        .onTapGesture {
+                                            selectedCity = city.name // Update the selected city
+                                            searchText = "" // Clear the search text
+                                            viewModel.fetchWeather(latitude: city.latitude, longitude: city.longitude)
+                                            viewModel.fetchDailyWeather(latitude: city.latitude, longitude: city.longitude)
+                                            showCitySearch = false // Close the dropdown
+                                        }
+                                }
+                                .listStyle(PlainListStyle())
+                                .background(Color.clear)
+                                .zIndex(2) // Set the list to the highest layer
+                            }
+                            weatherSymbol(for: currentWeather.weather.first?.main.lowercased() ?? "")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 50, height: 50)
+                                .foregroundColor(.white)
+                            
+                            Text("\(String(format: "%.1f°F", viewModel.kelvinToFahrenheit(currentWeather.temp)))")
+                                .font(.system(size: 50))
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                                .padding(.top, 10)
+                                .padding(.bottom, 20)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .center) // Center-align the VStack
+                        .listStyle(PlainListStyle())
+                        .background(Color.clear)
+                        .zIndex(2) // Set the list to the highest layer
                     } else {
-                        Text("Loading current weather...")
+                        Text("Loading temperature...")
                             .font(.title)
                             .foregroundColor(.white)
-                            .padding()
+                            .padding(.top, 10)
+                            .padding(.bottom, 20)
+                            .frame(maxWidth: .infinity, alignment: .center)
                     }
                     
-                    // Daily weather list
+                    if let currentWeather = viewModel.currentWeather {
+                        HStack {
+                            MetricCard(metricTitle: "Temp", metricValue: "\(String(format: "%.1f°F", viewModel.kelvinToFahrenheit(currentWeather.temp)))")
+                            MetricCard(metricTitle: "Humidity", metricValue: "\(String(format: "%.0f%", currentWeather.humidity))")
+                            MetricCard(metricTitle: "Wind", metricValue: "\(String(format: "%.2f m/s", currentWeather.wind_speed))")
+                            MetricCard(metricTitle: "Feels Like", metricValue: "\(String(format: "%.1f°F", viewModel.kelvinToFahrenheit(currentWeather.feels_like)))")
+                        }
+                        .padding(.horizontal)
+                        .padding(.bottom, 20)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                    } else {
+                        Text("Loading additional weather info...")
+                            .font(.title)
+                            .foregroundColor(.white)
+                            .padding(.bottom, 20)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                    
                     if let dailyWeather = viewModel.dailyWeather, !dailyWeather.isEmpty {
                         List(dailyWeather, id: \.id) { day in
                             DailyWeatherView(dailyWeather: day, viewModel: viewModel)
-                                .listRowBackground(Color.clear) // Make the row background transparent
+                                .listRowBackground(Color.clear)
                         }
                         .listStyle(PlainListStyle())
-                        .background(Color.clear) // Make the list background transparent
+                        .background(Color.clear)
                     } else {
                         Text("No daily weather data available.")
                             .font(.title)
@@ -118,65 +227,17 @@ struct WeatherPulseView: View {
                 }
             }
             .onAppear {
-                setupLocationManager()
+                let coordinates = cityCoordinates(for: selectedCity)
+                viewModel.fetchWeather(latitude: coordinates.latitude, longitude: coordinates.longitude)
+                viewModel.fetchDailyWeather(latitude: coordinates.latitude, longitude: coordinates.longitude)
             }
         }
-        
     }
     
     func cityCoordinates(for city: String) -> (latitude: Double, longitude: Double) {
-        switch city {
-        case "San Francisco":
-            return (37.7749, -122.4194)
-        case "New York":
-            return (40.7128, -74.0060)
-        case "Chicago":
-            return (41.8781, -87.6298)
-        case "Los Angeles":
-            return (34.0522, -118.2437)
-        case "Miami":
-            return (25.7617, -80.1918)
-        case "Houston":
-            return (29.7604, -95.3698)
-        case "Boston":
-            return (42.3601, -71.0589)
-        case "Denver":
-            return (39.7392, -104.9903)
-        case "Seattle":
-            return (47.6062, -122.3321)
-        case "Atlanta":
-            return (33.7490, -84.3880)
-        case "Nashville":
-            return (36.1627, -86.7816)
-        case "Las Vegas":
-            return (36.1699, -115.1398)
-        case "Portland":
-            return (45.5122, -122.6587)
-        case "Philadelphia":
-            return (39.9526, -75.1652)
-        case "Orlando":
-            return (28.5383, -81.3792)
-        case "Dallas":
-            return (32.7767, -96.7970)
-        case "Phoenix":
-            return (33.4484, -112.0740)
-        case "Austin":
-            return (30.2672, -97.7431)
-        case "San Diego":
-            return (32.7157, -117.1611)
-        case "Indianapolis":
-            return (39.7684, -86.1581)
-        case "Columbus":
-            return (39.9612, -82.9988)
-        case "San Antonio":
-            return (29.4241, -98.4936)
-        case "Jacksonville":
-            return (30.3322, -81.6557)
-        case "Charlotte":
-            return (35.2271, -80.8431)
-        case "Detroit":
-            return (42.3314, -83.0458)
-        default:
+        if let cityInfo = allCitiesWithCoordinates.first(where: { $0.name == city }) {
+            return (cityInfo.latitude, cityInfo.longitude)
+        } else {
             return (0, 0)
         }
     }
@@ -194,6 +255,27 @@ struct WeatherPulseView: View {
             viewModel.fetchDailyWeather(latitude: coordinates.latitude, longitude: coordinates.longitude)
         }
     }
+    
+    func weatherSymbol(for condition: String) -> Image {
+        switch condition {
+        case "clear":
+            return Image(systemName: "sun.max.fill")
+        case "clouds":
+            return Image(systemName: "cloud.fill")
+        case "rain":
+            return Image(systemName: "cloud.rain.fill")
+        case "snow":
+            return Image(systemName: "snow")
+        case "drizzle":
+            return Image(systemName: "cloud.drizzle.fill")
+        case "thunderstorm":
+            return Image(systemName: "cloud.bolt.fill")
+        case "wind":
+            return Image(systemName: "wind")
+        default:
+            return Image(systemName: "questionmark")
+        }
+    }
 }
 
 
@@ -205,3 +287,39 @@ extension Publisher {
 }
 
 
+struct WeatherPulseLogo: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 10) // Create a rounded rectangle background
+                .fill(Color.blue)
+                .frame(width: 80, height: 40) // Adjust size
+            
+            Text("WP")
+                .font(.system(size: 24))
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+        }
+    }
+}
+
+struct MetricCard: View {
+    var metricTitle: String
+    var metricValue: String
+    
+    var body: some View {
+        VStack {
+            Text(metricValue)
+                .font(.headline)
+                .fontWeight(.bold)
+                .foregroundColor(Color.white)
+            
+            Text(metricTitle)
+                .font(.subheadline)
+                .foregroundColor(Color.gray)
+        }
+        .padding(10)
+        .background(Color.blue)
+        .cornerRadius(10)
+        .shadow(radius: 5)
+    }
+}
