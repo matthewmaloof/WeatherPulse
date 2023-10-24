@@ -6,7 +6,7 @@
 //
 
 struct WeatherModel: Decodable {
-    let current: CurrentWeather
+    let current: CurrentWeather?
     let daily: [DailyWeather]
 }
 
@@ -31,7 +31,22 @@ struct Weather: Decodable, Hashable {
 
 struct DailyWeather: Decodable, Identifiable, Hashable {
     let dt: Int
+    let sunrise: Int?
+    let sunset: Int?
+    let moonrise: Int?
+    let moonset: Int?
+    let moon_phase: Double?
     let temp: Temp
+    let feels_like: Temp?
+    let pressure: Int
+    let humidity: Int
+    let dew_point: Double
+    let wind_speed: Double
+    let clouds: Int
+    let uvi: Double
+    let pop: Double?
+    let rain: Double?
+    let snow: Double?
     let weather: [Weather]
     
     var id: Int {
@@ -40,6 +55,6 @@ struct DailyWeather: Decodable, Identifiable, Hashable {
 }
 
 struct Temp: Decodable, Hashable {
-    let min: Double
-    let max: Double
+    let min: Double?
+    let max: Double?
 }

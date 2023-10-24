@@ -14,10 +14,12 @@ struct WeatherPulseView: View {
     @State private var selectedCity: String = "San Francisco"
     @State private var showAdditionalInfo: Bool = false
     @State private var isLocationPermissionGranted = false
+    @State private var dailyWeather: [DailyWeather] = [] // Add this state
+    
     
     // Create an instance of CLLocationManager
     let locationManager = CLLocationManager()
-
+    
     // Dynamic background based on the weather condition
     var weatherBackground: some View {
         switch viewModel.currentWeather?.weather.first?.main.lowercased() {
@@ -35,14 +37,14 @@ struct WeatherPulseView: View {
         self.viewModel = WeatherViewModel(api: WeatherAPI(), locationManager: locationManager)
         setupLocationManager()
     }
-
+    
     var body: some View {
         NavigationView {
             ZStack {
                 // Background gradient based on weather condition
                 weatherBackground
                     .ignoresSafeArea(.all)
-
+                
                 VStack {
                     Text("Weather Pulse")
                         .font(.largeTitle)
@@ -51,7 +53,7 @@ struct WeatherPulseView: View {
                         .padding()
                         .background(Color.black.opacity(0.5))
                         .cornerRadius(10)
-
+                    
                     // City selection picker
                     Picker("Select city", selection: $selectedCity) {
                         ForEach(viewModel.cities, id: \.self) {
@@ -61,12 +63,17 @@ struct WeatherPulseView: View {
                     .onChange(of: selectedCity) { newValue in
                         let coordinates = cityCoordinates(for: newValue)
                         viewModel.fetchWeather(latitude: coordinates.latitude, longitude: coordinates.longitude)
+                        
+                        // Fetch daily weather when the city changes
+                        viewModel.fetchDailyWeather(latitude: coordinates.latitude, longitude: coordinates.longitude)
+                        
                         showAdditionalInfo = true
                     }
+                    
                     .pickerStyle(MenuPickerStyle())
                     .background(Color.black.opacity(0.5))
                     .cornerRadius(20)
-
+                    
                     Button("Show Additional Weather Info") {
                         showAdditionalInfo.toggle()
                     }
@@ -82,25 +89,31 @@ struct WeatherPulseView: View {
                     .sheet(isPresented: $showAdditionalInfo) {
                         AdditionalWeatherInfoView(viewModel: viewModel)
                     }
-
+                    
                     // Current weather view
                     if let currentWeather = viewModel.currentWeather {
                         CurrentWeatherView(currentWeather: currentWeather)
                             .padding()
                     } else {
-                        Text("Loading...")
+                        Text("Loading current weather...")
                             .font(.title)
                             .foregroundColor(.white)
                             .padding()
                     }
 
-                    // Daily weather forecast
-                    if let dailyWeather = viewModel.dailyWeather {
-                        ForEach(dailyWeather.prefix(5), id: \.id) { day in
+                    if let dailyWeather = viewModel.dailyWeather, !dailyWeather.isEmpty {
+                        List(dailyWeather, id: \.id) { day in
                             DailyWeatherView(dailyWeather: day)
                                 .padding()
                         }
+                    } else {
+                        Text("No daily weather data available.")
+                            .font(.title)
+                            .foregroundColor(.white)
+                            .padding()
                     }
+
+                    
                 }
             }
             .onAppear {
@@ -172,11 +185,16 @@ struct WeatherPulseView: View {
             locationManager.startUpdatingLocation()
             isLocationPermissionGranted = true
         } else {
-            // Set the default city if permission is not granted
             selectedCity = "San Francisco"
+            
+            // Fetch daily weather for the default city
+            let coordinates = cityCoordinates(for: selectedCity)
+            viewModel.fetchDailyWeather(latitude: coordinates.latitude, longitude: coordinates.longitude)
         }
     }
 }
+
+
 
 extension Publisher {
     func onChange(perform action: @escaping (Output) -> Void) -> Publishers.HandleEvents<Self> {

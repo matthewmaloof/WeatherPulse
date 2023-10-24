@@ -23,7 +23,7 @@ class WeatherViewModel: NSObject, CLLocationManagerDelegate, ObservableObject {
     @Published var locationError: Error?
     @Published var apiError: Error?
     @Published var currentWeather: CurrentWeather?
-
+    
     @Published var dailyWeather: [DailyWeather]?
     @Published var isLoading: Bool = false
     @Published var cities = ["San Francisco", "New York", "Chicago", "Los Angeles", "Miami",
@@ -49,7 +49,7 @@ class WeatherViewModel: NSObject, CLLocationManagerDelegate, ObservableObject {
         
         self.locationManager.delegate = self
         currentLocationPublisher
-            .compactMap { $0 }  // Remove nils
+            .compactMap { $0 }
             .sink { [weak self] newLocation in
                 self?.fetchWeather(latitude: newLocation.coordinate.latitude, longitude: newLocation.coordinate.longitude)
             }
@@ -72,7 +72,7 @@ class WeatherViewModel: NSObject, CLLocationManagerDelegate, ObservableObject {
                 }
             } receiveValue: { [weak self] weatherModel in
                 print("Received weather: \(weatherModel)")
-
+                
                 DispatchQueue.main.async {
                     self?.weatherData = weatherModel
                     self?.currentWeather = weatherModel.current
@@ -80,8 +80,27 @@ class WeatherViewModel: NSObject, CLLocationManagerDelegate, ObservableObject {
             }
             .store(in: &cancellables)
     }
-
     
+    
+    func fetchDailyWeather(latitude: Double, longitude: Double) {
+        let publisher = api.fetchDailyWeather(latitude: latitude, longitude: longitude)
+        
+        publisher
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { [weak self] completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    print("Failed to fetch daily weather: \(error)")
+                }
+            }, receiveValue: { [weak self] dailyWeather in
+                self?.dailyWeather = dailyWeather
+            })
+            .store(in: &cancellables)
+    }
+
+
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.first {

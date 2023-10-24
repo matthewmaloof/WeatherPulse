@@ -15,7 +15,7 @@ struct DailyWeatherView: View {
             Text("\(formattedDate(fromTimestamp: dailyWeather.dt))")
                 .bold()
             Spacer()
-            Text("\(dailyWeather.temp.min, specifier: "%.1f")° - \(dailyWeather.temp.max, specifier: "%.1f")°")
+            Text("\(dailyWeather.temp.min ?? 0.0, specifier: "%.1f")° - \(dailyWeather.temp.max ?? 0.0, specifier: "%.1f")°")
             Image(systemName: dailyWeather.weather.first?.icon ?? "questionmark")
                 .resizable()
                 .frame(width: 20, height: 20)
