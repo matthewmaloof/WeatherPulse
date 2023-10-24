@@ -119,6 +119,12 @@ class WeatherViewModel: NSObject, CLLocationManagerDelegate, ObservableObject {
     }
 }
 
+extension WeatherViewModel {
+    func kelvinToFahrenheit(_ kelvin: Double) -> Double {
+        return (kelvin - 273.15) * 9/5 + 32
+    }
+}
+
 enum UIState {
     case loading
     case success

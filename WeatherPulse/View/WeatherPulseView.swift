@@ -20,9 +20,9 @@ struct WeatherPulseView: View {
     // Create an instance of CLLocationManager
     let locationManager = CLLocationManager()
     
-    // Dynamic background based on the weather condition
-    var weatherBackground: some View {
-        switch viewModel.currentWeather?.weather.first?.main.lowercased() {
+    // Dynamic background based on weather condition
+    private func weatherBackground(_ condition: String) -> some View {
+        switch condition {
         case "rain":
             return AnyView(LinearGradient(gradient: Gradient(colors: [Color.blue, Color.gray]), startPoint: .top, endPoint: .bottom))
         case "clear":
@@ -42,9 +42,10 @@ struct WeatherPulseView: View {
         NavigationView {
             ZStack {
                 // Background gradient based on weather condition
-                weatherBackground
-                    .ignoresSafeArea(.all)
-                
+                if let condition = viewModel.currentWeather?.weather.first?.main.lowercased() {
+                    weatherBackground(condition)
+                        .ignoresSafeArea()
+                }
                 VStack {
                     Text("Weather Pulse")
                         .font(.largeTitle)
@@ -69,7 +70,6 @@ struct WeatherPulseView: View {
                         
                         showAdditionalInfo = true
                     }
-                    
                     .pickerStyle(MenuPickerStyle())
                     .background(Color.black.opacity(0.5))
                     .cornerRadius(20)
@@ -100,26 +100,28 @@ struct WeatherPulseView: View {
                             .foregroundColor(.white)
                             .padding()
                     }
-
+                    
+                    // Daily weather list
                     if let dailyWeather = viewModel.dailyWeather, !dailyWeather.isEmpty {
                         List(dailyWeather, id: \.id) { day in
-                            DailyWeatherView(dailyWeather: day)
-                                .padding()
+                            DailyWeatherView(dailyWeather: day, viewModel: viewModel)
+                                .listRowBackground(Color.clear) // Make the row background transparent
                         }
+                        .listStyle(PlainListStyle())
+                        .background(Color.clear) // Make the list background transparent
                     } else {
                         Text("No daily weather data available.")
                             .font(.title)
                             .foregroundColor(.white)
                             .padding()
                     }
-
-                    
                 }
             }
             .onAppear {
                 setupLocationManager()
             }
         }
+        
     }
     
     func cityCoordinates(for city: String) -> (latitude: Double, longitude: Double) {
