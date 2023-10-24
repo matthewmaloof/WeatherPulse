@@ -1,140 +1,200 @@
-////
-////  WeatherPulseTests.swift
-////  WeatherPulseTests
-////
-////  Created by Matthew Maloof on 10/23/23.
-////
 //
-//import XCTest
-//import Combine
-//import CoreLocation
-//@testable import WeatherPulse
+//  WeatherPulseTests.swift
+//  WeatherPulseTests
 //
-//class WeatherPulseTests: XCTestCase {
-//    var viewModel: WeatherViewModel!
-//    var mockAPI: MockWeatherAPI!
-//    var mockLocationManager: MockLocationManager!
-//    var cancellables: Set<AnyCancellable> = []
-//    
-//    override func setUp() {
-//        super.setUp()
-//        mockAPI = MockWeatherAPI()
-//        mockLocationManager = MockLocationManager()
-//        viewModel = WeatherViewModel(api: mockAPI, locationManager: mockLocationManager)
-//    }
-//    
-//    func testLocationErrorHandling() {
-//        let expect = expectation(description: "Location error handled")
-//        let simulatedError = NSError(domain: "Test", code: 1, userInfo: [NSLocalizedDescriptionKey: "Expected Error"])
-//        
-//        viewModel.$locationError.sink { error in
-//            if let error = error {
-//                XCTAssertEqual(error.localizedDescription, simulatedError.localizedDescription)
-//                expect.fulfill()
-//            }
-//        }.store(in: &cancellables)
-//        
-//        mockLocationManager.simulateLocationFailure(with: simulatedError)
-//        waitForExpectations(timeout: 5, handler: nil)
-//    }
-//    
-//    func testWeatherFetching() {
-//        let expect = expectation(description: "Weather data fetched")
-//        
-//        viewModel.$weatherData.sink { data in
-//            if data != nil {
-//                expect.fulfill()
-//            }
-//        }.store(in: &cancellables)
-//        
-//        mockAPI.shouldFail = false
-//        mockLocationManager.simulateSuccessfulLocationUpdate()
-//        waitForExpectations(timeout: 5, handler: nil)
-//    }
-//    
-//    func testAPIErrorHandling() {
-//        let expect = expectation(description: "API error handled")
-//        
-//        viewModel.$apiError.sink { error in
-//            if error != nil {
-//                expect.fulfill()
-//            }
-//        }.store(in: &cancellables)
-//        
-//        mockAPI.shouldFail = true
-//        mockLocationManager.simulateSuccessfulLocationUpdate()
-//        waitForExpectations(timeout: 5, handler: nil)
-//    }
-//    
-//    func testLocationManagerDidChangeAuthorization() {
-//        let mockAPI = MockWeatherAPI()
-//        let mockLocationManager = MockLocationManager()
-//        
-//        let viewModel = WeatherViewModel(api: mockAPI, locationManager: mockLocationManager)
-//        mockLocationManager.delegate = viewModel
-//        
-//        // Test: Change to .authorizedWhenInUse
-//        mockLocationManager.simulateAuthorizationChange(to: .authorizedWhenInUse)
-//        XCTAssertTrue(viewModel.locationPermissionGranted)
-//        
-//        // Test: Change to .denied
-//        mockLocationManager.simulateAuthorizationChange(to: .denied)
-//        XCTAssertFalse(viewModel.locationPermissionGranted)
-//    }
-//    
-//}
+//  Created by Matthew Maloof on 10/23/23.
 //
-//
-//class MockWeatherAPI: WeatherAPIProtocol {
-//    
-//    var shouldFail = false
-//    
-//    func fetchWeather(latitude: Double, longitude: Double) -> AnyPublisher<WeatherModel, APIError> {
-//        
-//        if shouldFail {
-//            return Fail(error: APIError.network(description: "Simulated Network Error"))
-//                .eraseToAnyPublisher()
-//        }
-//        
-//        let weather = WeatherModel(
-//            current: CurrentWeather(dt: 1634755395, temp: 298.33, weather: [Weather(main: "Clear", icon: "01d")]),
-//            daily: [DailyWeather(dt: 1634755395, temp: Temp(min: 295, max: 299), weather: [Weather(main: "Clear", icon: "01d")])]
-//        )
-//        
-//        return Just(weather)
-//            .setFailureType(to: APIError.self)
-//            .eraseToAnyPublisher()
-//    }
-//}
-//
-//class MockLocationManager: LocationManagerProtocol {
-//    var delegate: CLLocationManagerDelegate?
-//    
-//    
-//    func requestWhenInUseAuthorization() {
-//        delegate?.locationManager?(CLLocationManager(), didChangeAuthorization: .authorizedWhenInUse)
-//    }
-//    
-//    func simulateAuthorizationChange(to status: CLAuthorizationStatus) {
-//        delegate?.locationManager?(CLLocationManager(), didChangeAuthorization: status)
-//    }
-//    
-//    func requestAlwaysAuthorization() {
-//        delegate?.locationManager?(CLLocationManager(), didChangeAuthorization: .authorizedAlways)
-//    }
-//    
-//    func requestLocation() {
-//        let mockLocation = CLLocation(latitude: 37.7749, longitude: -122.4194)
-//        delegate?.locationManager?(CLLocationManager(), didUpdateLocations: [mockLocation])
-//    }
-//    
-//    func simulateLocationFailure(with error: Error) {
-//        delegate?.locationManager?(CLLocationManager(), didFailWithError: error)
-//    }
-//    
-//    // Method to simulate successful location update
-//    func simulateSuccessfulLocationUpdate() {
-//        let mockLocation = CLLocation(latitude: 37.7749, longitude: -122.4194)
-//        delegate?.locationManager?(CLLocationManager(), didUpdateLocations: [mockLocation])
-//    }
-//}
+
+import XCTest
+import Combine
+import CoreLocation
+@testable import WeatherPulse
+
+class WeatherViewModelTests: XCTestCase {
+    
+    var sut: WeatherViewModel!
+    var mockWeatherAPI: MockWeatherAPI!
+    var mockLocationManager: MockLocationManager!
+    var cancellables: Set<AnyCancellable>!
+    
+    override func setUp() {
+        super.setUp()
+        mockWeatherAPI = MockWeatherAPI()
+        mockLocationManager = MockLocationManager()
+        if let unwrappedMockLocationManager = mockLocationManager {
+            sut = WeatherViewModel(api: mockWeatherAPI, locationManager: unwrappedMockLocationManager)
+        }
+        cancellables = []
+    }
+    
+    override func tearDown() {
+        sut = nil
+        mockWeatherAPI = nil
+        mockLocationManager = nil
+        cancellables = nil
+        super.tearDown()
+    }
+    
+    
+    func testRequestWhenInUseAuthorizationCallsLocationManager() {
+        sut.requestWhenInUseAuthorization()
+        
+        XCTAssertTrue(mockLocationManager.didRequestWhenInUseAuthorization)
+    }
+    
+    func testRequestAlwaysAuthorizationCallsLocationManager() {
+        sut.requestAlwaysAuthorization()
+        
+        XCTAssertTrue(mockLocationManager.didRequestAlwaysAuthorization)
+    }
+    
+    func testFetchDailyWeatherSuccess() {
+        // Given
+        let jsonData = """
+                   [
+                       {
+                           "dt": 1633027200,
+                           "temp": {
+                               "min": 289.82,
+                               "max": 295.67
+                           },
+                           "weather": [
+                               {
+                                   "main": "Clouds",
+                                   "icon": "04d"
+                               }
+                           ]
+                       }
+                   ]
+               """.data(using: .utf8)!
+        
+        let expectedDailyWeather: [DailyWeather] = try! JSONDecoder().decode([DailyWeather].self, from: jsonData)
+        mockWeatherAPI.fetchDailyWeatherResult = .success(expectedDailyWeather)
+        
+        
+        let expectation = XCTestExpectation(description: "Fetch Daily Weather Successful")
+        sut.$dailyWeather
+            .dropFirst()
+            .sink { receivedDailyWeather in
+                XCTAssertEqual(receivedDailyWeather, expectedDailyWeather)
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        // When
+        sut.fetchDailyWeather(latitude: 12.34, longitude: 56.78)
+        
+        // Then
+        wait(for: [expectation], timeout: 1.0)
+    }
+    
+    func testLocationManagerDidUpdateLocations() {
+        // Given
+        let location = CLLocation(latitude: 12.34, longitude: 56.78)
+        
+        let expectation = XCTestExpectation(description: "Did update locations")
+        sut.$currentLocation
+            .dropFirst()
+            .sink { newLocation in
+                XCTAssertEqual(newLocation?.coordinate.latitude, 12.34)
+                XCTAssertEqual(newLocation?.coordinate.longitude, 56.78)
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        // When
+        sut.locationManager(mockLocationManager, didUpdateLocations: [location])
+        
+        // Then
+        wait(for: [expectation], timeout: 1.0)
+    }
+    
+    func testLocationManagerDidFailWithError() {
+        // Given
+        let error = NSError(domain: "LocationError", code: 1234, userInfo: nil)
+        
+        let expectation = XCTestExpectation(description: "Did fail with error")
+        sut.$locationError
+            .dropFirst()
+            .sink { receivedError in
+                XCTAssertEqual((receivedError as NSError?)?.code, 1234)
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        // When
+        sut.locationManager(mockLocationManager, didFailWithError: error)
+        
+        // Then
+        wait(for: [expectation], timeout: 1.0)
+    }
+    
+    func testLocationManagerDidChangeAuthorization() {
+        // Given
+        let status: CLAuthorizationStatus = .authorizedWhenInUse
+        
+        let expectation = XCTestExpectation(description: "Did change authorization")
+        sut.$locationPermissionGranted
+            .dropFirst()
+            .sink { isGranted in
+                XCTAssertTrue(isGranted)
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        // When
+        sut.locationManager(mockLocationManager, didChangeAuthorization: status)
+        
+        // Then
+        wait(for: [expectation], timeout: 1.0)
+    }
+    
+    func testKelvinToFahrenheitConversion() {
+        let kelvin = 300.0
+        let fahrenheit = sut.kelvinToFahrenheit(kelvin)
+        
+        XCTAssertEqual(fahrenheit, 80.33, accuracy: 0.01)
+    }
+    
+}
+
+
+class MockLocationManager: NSObject, LocationManagerType, LocationManagerProtocol {
+    var delegate: CLLocationManagerDelegate?
+    
+    // Flags to keep track of whether methods were called
+    var didRequestWhenInUseAuthorization = false
+    var didRequestAlwaysAuthorization = false
+    var didRequestLocation = false
+    
+    func requestWhenInUseAuthorization() {
+        didRequestWhenInUseAuthorization = true
+    }
+    
+    func requestAlwaysAuthorization() {
+        didRequestAlwaysAuthorization = true
+    }
+    
+    func requestLocation() {
+        didRequestLocation = true
+    }
+}
+
+class MockWeatherAPI: WeatherAPIProtocol {
+    var fetchWeatherResult: Result<WeatherModel, APIError> = .failure(.dataNotFound)
+    var fetchDailyWeatherResult: Result<[DailyWeather], APIError> = .failure(.dataNotFound)
+    
+    func fetchWeather(latitude: Double, longitude: Double) -> AnyPublisher<WeatherModel, APIError> {
+        return Future<WeatherModel, APIError> { promise in
+            promise(self.fetchWeatherResult)
+        }
+        .eraseToAnyPublisher()
+    }
+    
+    func fetchDailyWeather(latitude: Double, longitude: Double) -> AnyPublisher<[DailyWeather], APIError> {
+        return Future<[DailyWeather], APIError> { promise in
+            promise(self.fetchDailyWeatherResult)
+        }
+        .eraseToAnyPublisher()
+    }
+}

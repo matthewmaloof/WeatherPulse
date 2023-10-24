@@ -7,7 +7,7 @@
 
 import CoreLocation
 
-protocol LocationManagerProtocol: AnyObject {
+protocol LocationManagerProtocol: CLLocationManagerDelegate {
     var delegate: CLLocationManagerDelegate? { get set }
     func requestWhenInUseAuthorization()
     func requestLocation()

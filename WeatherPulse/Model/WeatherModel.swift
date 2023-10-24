@@ -17,7 +17,7 @@ struct CurrentWeather: Decodable {
     let wind_speed: Double
     let humidity: Double
     let visibility: Double
-    let pressure: Double
+    let pressure: Double?
     var primaryCondition: String? {
         return weather.first?.main
     }
@@ -38,12 +38,12 @@ struct DailyWeather: Decodable, Identifiable, Hashable {
     let moon_phase: Double?
     let temp: Temp
     let feels_like: Temp?
-    let pressure: Int
-    let humidity: Int
-    let dew_point: Double
-    let wind_speed: Double
-    let clouds: Int
-    let uvi: Double
+    let pressure: Int?
+    let humidity: Int?
+    let dew_point: Double?
+    let wind_speed: Double?
+    let clouds: Int?
+    let uvi: Double?
     let pop: Double?
     let rain: Double?
     let snow: Double?

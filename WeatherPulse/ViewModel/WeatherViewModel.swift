@@ -10,8 +10,6 @@ import CoreLocation
 
 class WeatherViewModel: NSObject, CLLocationManagerDelegate, ObservableObject {
     private var api: WeatherAPIProtocol
-    private var locationManager: LocationManagerProtocol
-    
     var currentLocationPublisher: AnyPublisher<CLLocation?, Never> {
         return $currentLocation
             .removeDuplicates()
@@ -23,7 +21,7 @@ class WeatherViewModel: NSObject, CLLocationManagerDelegate, ObservableObject {
     @Published var locationError: Error?
     @Published var apiError: Error?
     @Published var currentWeather: CurrentWeather?
-    
+    var locationManager: LocationManagerType
     @Published var dailyWeather: [DailyWeather]?
     @Published var isLoading: Bool = false
     @Published var cities = ["San Francisco", "New York", "Chicago", "Los Angeles", "Miami",
@@ -37,7 +35,7 @@ class WeatherViewModel: NSObject, CLLocationManagerDelegate, ObservableObject {
     private var weatherAPI: WeatherAPIProtocol
     
     
-    init(api: WeatherAPIProtocol, locationManager: LocationManagerProtocol) {
+    init(api: WeatherAPIProtocol, locationManager: LocationManagerType) {
         self.api = api
         self.locationManager = locationManager
         
@@ -102,21 +100,29 @@ class WeatherViewModel: NSObject, CLLocationManagerDelegate, ObservableObject {
 
 
     
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    @nonobjc func locationManager<T: LocationManagerProtocol>(_ manager: T, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.first {
             self.currentLocation = location
-            // Fetch weather using the latitude and longitude from `currentLocation`
             fetchWeather(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
         }
     }
     
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+    @nonobjc func locationManager<T: LocationManagerProtocol>(_ manager: T, didFailWithError error: Error) {
         self.locationError = error
     }
     
-    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+    @nonobjc func locationManager<T: LocationManagerProtocol>(_ manager: T, didChangeAuthorization status: CLAuthorizationStatus) {
         locationPermissionGranted = (status == .authorizedWhenInUse || status == .authorizedAlways)
     }
+
+    func requestWhenInUseAuthorization() {
+        locationManager.requestWhenInUseAuthorization()
+    }
+
+    func requestAlwaysAuthorization() {
+        locationManager.requestAlwaysAuthorization()
+    }
+
 }
 
 extension WeatherViewModel {

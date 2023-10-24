@@ -8,14 +8,17 @@
 import Foundation
 import CoreLocation
 
-class LocationManager: LocationManagerProtocol {
-    var delegate: CLLocationManagerDelegate?
-    var manager: CLLocationManager
+class LocationManager: NSObject, LocationManagerProtocol {
+    var delegate: CLLocationManagerDelegate? {
+            didSet {
+                manager.delegate = delegate
+            }
+        }
+        var manager: CLLocationManager
 
-    init() {
-        self.manager = CLLocationManager()
-        self.manager.delegate = delegate
-    }
+    override init() {
+            self.manager = CLLocationManager()
+        }
 
     func requestWhenInUseAuthorization() {
         manager.requestWhenInUseAuthorization()
@@ -29,3 +32,11 @@ class LocationManager: LocationManagerProtocol {
         manager.requestLocation()
     }
 }
+
+protocol LocationManagerType: AnyObject {
+    var delegate: CLLocationManagerDelegate? { get set }
+    func requestWhenInUseAuthorization()
+    func requestAlwaysAuthorization()
+    func requestLocation()
+}
+extension CLLocationManager: LocationManagerType {}
