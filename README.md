@@ -6,17 +6,22 @@
 
 ## Table of Contents
 1. [Overview](#overview)
-2. [Features](#features)
-3. [Installation](#installation)
-4. [Requirements](#requirements)
-5. [Usage](#usage)
-6. [API Integration](#api-integration)
-7. [Testing](#testing)
-8. [Contributions](#contributions)
+2. [Preview](#preview)
+3. [Features](#features)
+4. [Installation](#installation)
+5. [Requirements](#requirements)
+6. [Usage](#usage)
+7. [API Integration](#api-integration)
+8. [Testing](#testing)
+9. [Contributions](#contributions)
 
 ## Overview
 
 WeatherPulse is a weather forecast app developed in Swift using SwiftUI. The app provides real-time weather updates and forecasts by fetching data from a REST API. It features an interactive and visually pleasing user interface designed to enhance user experience.
+
+## Preview
+
+https://github.com/matthewmaloof/WeatherPulse/assets/148370987/4354c631-fa00-4923-8624-14c04bcdc3c6
 
 ## Features
 
