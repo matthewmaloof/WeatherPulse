@@ -175,6 +175,7 @@ struct WeatherPulseView: View {
                                             showCitySearch = false // Close the dropdown
                                         }
                                 }
+                                .frame(height: 100)
                                 .listStyle(PlainListStyle())
                                 .background(Color.clear)
                                 .zIndex(2) // Set the list to the highest layer

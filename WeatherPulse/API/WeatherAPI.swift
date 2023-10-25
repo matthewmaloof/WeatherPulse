@@ -50,22 +50,5 @@ class WeatherAPI: WeatherAPIProtocol {
             }
             .eraseToAnyPublisher()
     }
-
-
-
-
-    func fetchData<T: Decodable>(from endpoint: URL) -> AnyPublisher<T, APIError> {
-        return URLSession.shared.dataTaskPublisher(for: endpoint)
-            .map(\.data)
-            .decode(type: T.self, decoder: JSONDecoder())
-            .mapError { error in
-                if let apiError = error as? APIError {
-                    return apiError
-                }
-                return APIError.jsonParsingError(error)
-            }
-            .eraseToAnyPublisher()
-    }
-    
 }
 
