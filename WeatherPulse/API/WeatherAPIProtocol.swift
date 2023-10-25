@@ -8,6 +8,5 @@
 import Combine
 
 protocol WeatherAPIProtocol {
-    func fetchWeather(latitude: Double, longitude: Double) -> AnyPublisher<WeatherModel, APIError>
-    func fetchDailyWeather(latitude: Double, longitude: Double) -> AnyPublisher<[DailyWeather], APIError>
+    func fetch<T: Decodable>(latitude: Double, longitude: Double, for endpoint: EndpointType, decodingType: T.Type) -> AnyPublisher<T, APIError>
 }

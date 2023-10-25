@@ -5,25 +5,43 @@
 //  Created by Matthew Maloof on 10/23/23.
 //
 
+enum EndpointType {
+    case current
+    case daily
+    
+    var excludeFields: String {
+        switch self {
+        case .current:
+            return ""
+        case .daily:
+            return "current,minutely,hourly"
+        }
+    }
+}
+
 import Combine
 import Foundation
 
 class WeatherAPI: WeatherAPIProtocol {
     
-    private let apiKey = "9a886f58ffc36fd81c83212ab386e366"
     static let shared = WeatherAPI()
     
-    func fetchWeather(latitude: Double, longitude: Double) -> AnyPublisher<WeatherModel, APIError> {
-        let url = URL(string: "https://api.openweathermap.org/data/2.5/onecall?lat=\(latitude)&lon=\(longitude)&appid=\(apiKey)")!
+    func fetch<T: Decodable>(latitude: Double, longitude: Double, for endpoint: EndpointType, decodingType: T.Type) -> AnyPublisher<T, APIError> {
+        let excludeFields = endpoint.excludeFields
+        let urlString = "https://api.openweathermap.org/data/2.5/onecall?lat=\(latitude)&lon=\(longitude)&exclude=\(excludeFields)&appid=\(Constants.apiKey)"
+        
+        guard let url = URL(string: urlString) else {
+            return Fail(error: APIError.custom("Invalid URL")).eraseToAnyPublisher()
+        }
         
         return URLSession.shared.dataTaskPublisher(for: url)
             .tryMap { data, response in
-                if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+               if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
                     throw APIError.invalidStatusCode(httpResponse.statusCode)
                 }
                 return data
             }
-            .decode(type: WeatherModel.self, decoder: JSONDecoder())
+            .decode(type: T.self, decoder: JSONDecoder())
             .mapError { error in
                 if let apiError = error as? APIError {
                     return apiError
@@ -32,29 +50,9 @@ class WeatherAPI: WeatherAPIProtocol {
             }
             .eraseToAnyPublisher()
     }
-    
-    func fetchDailyWeather(latitude: Double, longitude: Double) -> AnyPublisher<[DailyWeather], APIError> {
-        let url = URL(string: "https://api.openweathermap.org/data/2.5/onecall?lat=\(latitude)&lon=\(longitude)&exclude=current,minutely,hourly&appid=\(apiKey)")!
-        
-        return URLSession.shared.dataTaskPublisher(for: url)
-            .tryMap { data, response in
-                if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
-                    throw APIError.invalidStatusCode(httpResponse.statusCode)
-                }
-                return data
-            }
-            .decode(type: WeatherModel.self, decoder: JSONDecoder())
-            .map { weatherModel in
-                return weatherModel.daily
-            }
-            .mapError { error in
-                if let apiError = error as? APIError {
-                    return apiError
-                }
-                return APIError.jsonParsingError(error)
-            }
-            .eraseToAnyPublisher()
-    }
+
+
+
 
     func fetchData<T: Decodable>(from endpoint: URL) -> AnyPublisher<T, APIError> {
         return URLSession.shared.dataTaskPublisher(for: endpoint)

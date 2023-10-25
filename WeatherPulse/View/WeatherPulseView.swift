@@ -22,7 +22,6 @@ struct CityWithCoordinates: Identifiable {
     }
 }
 
-
 struct WeatherPulseView: View {
     @ObservedObject var viewModel: WeatherViewModel
     @State private var selectedCity: String = "San Francisco"
@@ -30,40 +29,7 @@ struct WeatherPulseView: View {
     @State private var dailyWeather: [DailyWeather] = []
     @State private var searchText: String = ""
     @State private var showCitySearch = false
-    
-    private let allCities: [String] = ["San Francisco", "New York", "Chicago", "Los Angeles", "Miami",
-                                       "Houston", "Boston", "Denver", "Seattle", "Atlanta",
-                                       "Nashville", "Las Vegas", "Portland", "Philadelphia", "Orlando",
-                                       "Dallas", "Phoenix", "Austin", "San Diego", "Indianapolis",
-                                       "Columbus", "San Antonio", "Jacksonville", "Charlotte", "Detroit"]
-    
-    private let allCitiesWithCoordinates: [CityWithCoordinates] = [
-        CityWithCoordinates(name: "San Francisco", latitude: 37.7749, longitude: -122.4194),
-        CityWithCoordinates(name: "New York", latitude: 40.7128, longitude: -74.0060),
-        CityWithCoordinates(name: "Chicago", latitude: 41.8781, longitude: -87.6298),
-        CityWithCoordinates(name: "Los Angeles", latitude: 34.0522, longitude: -118.2437),
-        CityWithCoordinates(name: "Miami", latitude: 25.7617, longitude: -80.1918),
-        CityWithCoordinates(name: "Houston", latitude: 29.7604, longitude: -95.3698),
-        CityWithCoordinates(name: "Boston", latitude: 42.3601, longitude: -71.0589),
-        CityWithCoordinates(name: "Denver", latitude: 39.7392, longitude: -104.9903),
-        CityWithCoordinates(name: "Seattle", latitude: 47.6062, longitude: -122.3321),
-        CityWithCoordinates(name: "Atlanta", latitude: 33.7490, longitude: -84.3880),
-        CityWithCoordinates(name: "Nashville", latitude: 36.1627, longitude: -86.7816),
-        CityWithCoordinates(name: "Las Vegas", latitude: 36.1699, longitude: -115.1398),
-        CityWithCoordinates(name: "Portland", latitude: 45.5122, longitude: -122.6587),
-        CityWithCoordinates(name: "Philadelphia", latitude: 39.9526, longitude: -75.1652),
-        CityWithCoordinates(name: "Orlando", latitude: 28.5383, longitude: -81.3792),
-        CityWithCoordinates(name: "Dallas", latitude: 32.7767, longitude: -96.7970),
-        CityWithCoordinates(name: "Phoenix", latitude: 33.4484, longitude: -112.0740),
-        CityWithCoordinates(name: "Austin", latitude: 30.2672, longitude: -97.7431),
-        CityWithCoordinates(name: "San Diego", latitude: 32.7157, longitude: -117.1611),
-        CityWithCoordinates(name: "Indianapolis", latitude: 39.7684, longitude: -86.1581),
-        CityWithCoordinates(name: "Columbus", latitude: 39.9612, longitude: -82.9988),
-        CityWithCoordinates(name: "San Antonio", latitude: 29.4241, longitude: -98.4936),
-        CityWithCoordinates(name: "Jacksonville", latitude: 30.3322, longitude: -81.6557),
-        CityWithCoordinates(name: "Charlotte", latitude: 35.2271, longitude: -80.8431),
-        CityWithCoordinates(name: "Detroit", latitude: 42.3314, longitude: -83.0458),
-    ]
+    @State private var allCities: [String]
     
     
     let locationManager = CLLocationManager()
@@ -81,8 +47,12 @@ struct WeatherPulseView: View {
     
     init() {
         self.viewModel = WeatherViewModel(api: WeatherAPI(), locationManager: locationManager)
+        self.allCities = Constants.allCities
+        
         setupLocationManager()
+        
     }
+    
     
     var body: some View {
         NavigationView {
@@ -116,8 +86,22 @@ struct WeatherPulseView: View {
                                 didSelectCity: { newCity in
                                     selectedCity = newCity
                                     let coordinates = cityCoordinates(for: selectedCity)
-                                    viewModel.fetchWeather(latitude: coordinates.latitude, longitude: coordinates.longitude)
-                                    viewModel.fetchDailyWeather(latitude: coordinates.latitude, longitude: coordinates.longitude)
+                                    
+                                    // Using the generic fetchWeatherData function for fetching current weather
+                                    viewModel.fetchWeatherData(
+                                        latitude: coordinates.latitude,
+                                        longitude: coordinates.longitude,
+                                        endpointType: .current,
+                                        decodingType: WeatherModel.self
+                                    )
+                                    
+                                    // Using the generic fetchWeatherData function for fetching daily weather
+                                    viewModel.fetchWeatherData(
+                                        latitude: coordinates.latitude,
+                                        longitude: coordinates.longitude,
+                                        endpointType: .daily,
+                                        decodingType: [DailyWeather].self
+                                    )
                                 },
                                 selectedCity: $selectedCity,
                                 showCitySearch: $showCitySearch
@@ -130,8 +114,21 @@ struct WeatherPulseView: View {
                         
                         Button(action: {
                             let coordinates = cityCoordinates(for: selectedCity)
-                            viewModel.fetchWeather(latitude: coordinates.latitude, longitude: coordinates.longitude)
-                            viewModel.fetchDailyWeather(latitude: coordinates.latitude, longitude: coordinates.longitude)
+                            // Using the generic fetchWeatherData function for fetching current weather
+                            viewModel.fetchWeatherData(
+                                latitude: coordinates.latitude,
+                                longitude: coordinates.longitude,
+                                endpointType: .current,
+                                decodingType: WeatherModel.self
+                            )
+                            
+                            // Using the generic fetchWeatherData function for fetching daily weather
+                            viewModel.fetchWeatherData(
+                                latitude: coordinates.latitude,
+                                longitude: coordinates.longitude,
+                                endpointType: .daily,
+                                decodingType: [DailyWeather].self
+                            )
                         }) {
                             Image(systemName: "arrow.clockwise.circle.fill")
                                 .font(.title)
@@ -151,15 +148,30 @@ struct WeatherPulseView: View {
                                 .padding(.horizontal, 10)
                             
                             if !searchText.isEmpty {
-                                List(allCitiesWithCoordinates.filter {
+                                List(Constants.allCitiesWithCoordinates.filter {
                                     $0.name.lowercased().contains(searchText.lowercased())
                                 }) { city in
                                     Text(city.name)
                                         .onTapGesture {
                                             selectedCity = city.name // Update the selected city
                                             searchText = "" // Clear the search text
-                                            viewModel.fetchWeather(latitude: city.latitude, longitude: city.longitude)
-                                            viewModel.fetchDailyWeather(latitude: city.latitude, longitude: city.longitude)
+                                            let coordinates = cityCoordinates(for: selectedCity)
+                                            
+                                            // Using the generic fetchWeatherData function for fetching current weather
+                                            viewModel.fetchWeatherData(
+                                                latitude: coordinates.latitude,
+                                                longitude: coordinates.longitude,
+                                                endpointType: .current,
+                                                decodingType: WeatherModel.self
+                                            )
+                                            
+                                            // Using the generic fetchWeatherData function for fetching daily weather
+                                            viewModel.fetchWeatherData(
+                                                latitude: coordinates.latitude,
+                                                longitude: coordinates.longitude,
+                                                endpointType: .daily,
+                                                decodingType: [DailyWeather].self
+                                            )
                                             showCitySearch = false // Close the dropdown
                                         }
                                 }
@@ -173,7 +185,7 @@ struct WeatherPulseView: View {
                                 .frame(width: 50, height: 50)
                                 .foregroundColor(.white)
                             
-                            Text("\(String(format: "%.1f°F", viewModel.kelvinToFahrenheit(currentWeather.temp)))")
+                            Text("\(String(format: "%.1f°F", currentWeather.temp.kelvinToFahrenheit()))")
                                 .font(.system(size: 50))
                                 .fontWeight(.bold)
                                 .foregroundColor(.white)
@@ -195,10 +207,10 @@ struct WeatherPulseView: View {
                     
                     if let currentWeather = viewModel.currentWeather {
                         HStack {
-                            MetricCard(metricTitle: "Temp", metricValue: "\(String(format: "%.1f°F", viewModel.kelvinToFahrenheit(currentWeather.temp)))")
+                            MetricCard(metricTitle: "Temp", metricValue: "\(String(format: "%.1f°F", currentWeather.temp.kelvinToFahrenheit()))")
                             MetricCard(metricTitle: "Humidity", metricValue: "\(String(format: "%.0f%", currentWeather.humidity))")
                             MetricCard(metricTitle: "Wind", metricValue: "\(String(format: "%.2f m/s", currentWeather.wind_speed))")
-                            MetricCard(metricTitle: "Feels Like", metricValue: "\(String(format: "%.1f°F", viewModel.kelvinToFahrenheit(currentWeather.feels_like)))")
+                            MetricCard(metricTitle: "Feels Like", metricValue: "\(String(format: "%.1f°F", currentWeather.feels_like.kelvinToFahrenheit()))")
                         }
                         .padding(.horizontal)
                         .padding(.bottom, 20)
@@ -228,14 +240,28 @@ struct WeatherPulseView: View {
             }
             .onAppear {
                 let coordinates = cityCoordinates(for: selectedCity)
-                viewModel.fetchWeather(latitude: coordinates.latitude, longitude: coordinates.longitude)
-                viewModel.fetchDailyWeather(latitude: coordinates.latitude, longitude: coordinates.longitude)
+                
+                // Using the generic fetchWeatherData function for fetching current weather
+                viewModel.fetchWeatherData(
+                    latitude: coordinates.latitude,
+                    longitude: coordinates.longitude,
+                    endpointType: .current,
+                    decodingType: WeatherModel.self
+                )
+                
+                // Using the generic fetchWeatherData function for fetching daily weather
+                viewModel.fetchWeatherData(
+                    latitude: coordinates.latitude,
+                    longitude: coordinates.longitude,
+                    endpointType: .daily,
+                    decodingType: [DailyWeather].self
+                )
             }
         }
     }
     
     func cityCoordinates(for city: String) -> (latitude: Double, longitude: Double) {
-        if let cityInfo = allCitiesWithCoordinates.first(where: { $0.name == city }) {
+        if let cityInfo = Constants.allCitiesWithCoordinates.first(where: { $0.name == city }) {
             return (cityInfo.latitude, cityInfo.longitude)
         } else {
             return (0, 0)
@@ -252,7 +278,13 @@ struct WeatherPulseView: View {
             
             // Fetch daily weather for the default city
             let coordinates = cityCoordinates(for: selectedCity)
-            viewModel.fetchDailyWeather(latitude: coordinates.latitude, longitude: coordinates.longitude)
+            // Using the generic fetchWeatherData function for fetching daily weather
+            viewModel.fetchWeatherData(
+                latitude: coordinates.latitude,
+                longitude: coordinates.longitude,
+                endpointType: .daily,
+                decodingType: [DailyWeather].self
+            )
         }
     }
     
@@ -299,27 +331,5 @@ struct WeatherPulseLogo: View {
                 .fontWeight(.bold)
                 .foregroundColor(.white)
         }
-    }
-}
-
-struct MetricCard: View {
-    var metricTitle: String
-    var metricValue: String
-    
-    var body: some View {
-        VStack {
-            Text(metricValue)
-                .font(.headline)
-                .fontWeight(.bold)
-                .foregroundColor(Color.white)
-            
-            Text(metricTitle)
-                .font(.subheadline)
-                .foregroundColor(Color.gray)
-        }
-        .padding(10)
-        .background(Color.blue)
-        .cornerRadius(10)
-        .shadow(radius: 5)
     }
 }

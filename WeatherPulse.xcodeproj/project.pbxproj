@@ -31,6 +31,8 @@
 		02DA23EC2AE823DF00AC91B1 /* MistAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DA23EB2AE823DF00AC91B1 /* MistAnimation.swift */; };
 		02DA23EE2AE823ED00AC91B1 /* SnowAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DA23ED2AE823ED00AC91B1 /* SnowAnimation.swift */; };
 		02DA23F02AE8430900AC91B1 /* CitySearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DA23EF2AE8430900AC91B1 /* CitySearchView.swift */; };
+		02DA23F32AE95A1500AC91B1 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DA23F22AE95A1500AC91B1 /* Constants.swift */; };
+		02DA23F52AE9743500AC91B1 /* MetricCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DA23F42AE9743500AC91B1 /* MetricCardView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,6 +80,8 @@
 		02DA23EB2AE823DF00AC91B1 /* MistAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MistAnimation.swift; sourceTree = "<group>"; };
 		02DA23ED2AE823ED00AC91B1 /* SnowAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnowAnimation.swift; sourceTree = "<group>"; };
 		02DA23EF2AE8430900AC91B1 /* CitySearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CitySearchView.swift; sourceTree = "<group>"; };
+		02DA23F22AE95A1500AC91B1 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		02DA23F42AE9743500AC91B1 /* MetricCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricCardView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -128,6 +132,7 @@
 		0216136E2AE74E0C008BBD79 /* WeatherPulse */ = {
 			isa = PBXGroup;
 			children = (
+				02DA23F12AE95A0800AC91B1 /* Constants */,
 				02DA23E02AE8236000AC91B1 /* Animations */,
 				0216139C2AE751A3008BBD79 /* API */,
 				0216139B2AE7519E008BBD79 /* ViewModel */,
@@ -180,6 +185,7 @@
 				021613A52AE75314008BBD79 /* CurrentWeatherView.swift */,
 				021613A72AE75325008BBD79 /* DailyWeatherView.swift */,
 				02DA23EF2AE8430900AC91B1 /* CitySearchView.swift */,
+				02DA23F42AE9743500AC91B1 /* MetricCardView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -216,6 +222,14 @@
 				02DA23ED2AE823ED00AC91B1 /* SnowAnimation.swift */,
 			);
 			path = Animations;
+			sourceTree = "<group>";
+		};
+		02DA23F12AE95A0800AC91B1 /* Constants */ = {
+			isa = PBXGroup;
+			children = (
+				02DA23F22AE95A1500AC91B1 /* Constants.swift */,
+			);
+			path = Constants;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -361,8 +375,10 @@
 				0216139E2AE751C7008BBD79 /* WeatherModel.swift in Sources */,
 				021613B22AE76032008BBD79 /* LocationManager.swift in Sources */,
 				021613AE2AE756A7008BBD79 /* WeatherAPIProtocol.swift in Sources */,
+				02DA23F52AE9743500AC91B1 /* MetricCardView.swift in Sources */,
 				021613702AE74E0C008BBD79 /* WeatherPulseApp.swift in Sources */,
 				02DA23E22AE8236F00AC91B1 /* RainAnimation.swift in Sources */,
+				02DA23F32AE95A1500AC91B1 /* Constants.swift in Sources */,
 				02DA23EE2AE823ED00AC91B1 /* SnowAnimation.swift in Sources */,
 				021613A82AE75325008BBD79 /* DailyWeatherView.swift in Sources */,
 				02DA23F02AE8430900AC91B1 /* CitySearchView.swift in Sources */,

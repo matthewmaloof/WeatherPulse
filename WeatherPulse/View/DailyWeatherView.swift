@@ -21,10 +21,18 @@ struct DailyWeatherView: View {
             
             Spacer()
             
-            Text("Min: \(Int(viewModel.kelvinToFahrenheit(dailyWeather.temp.min ?? 0)))°F  Max: \(Int(viewModel.kelvinToFahrenheit(dailyWeather.temp.max ?? 0)))°F")
+            let fahrenheitTempsMin = kelvinToFahrenheit(tempInKelvin: dailyWeather.temp.min ?? 0.0)
+            let fahrenheitTempsMax = kelvinToFahrenheit(tempInKelvin: dailyWeather.temp.max ?? 0.0)
+
+            // Format the temperatures with one decimal place
+            let formattedMinTemp = String(format: "%.1f", fahrenheitTempsMin)
+            let formattedMaxTemp = String(format: "%.1f", fahrenheitTempsMax)
+
+            Text("Min: \(formattedMinTemp)°F  Max: \(formattedMaxTemp)°F")
                 .font(.system(size: 14)) // Smaller font size
                 .foregroundColor(.white)
                 .lineLimit(1)
+
             
             Spacer()
             
@@ -63,5 +71,10 @@ struct DailyWeatherView: View {
         dateFormatter.dateFormat = "EEEE, MMM d"
         return dateFormatter.string(from: Date(timeIntervalSince1970: TimeInterval(timestamp)))
     }
+    
+    func kelvinToFahrenheit(tempInKelvin: Double) -> Double {
+        return (tempInKelvin - 273.15) * 9/5 + 32
+    }
+
 }
 
