@@ -21,7 +21,7 @@ WeatherPulse is a weather forecast app developed in Swift using SwiftUI. The app
 
 ## Preview
 
-https://github.com/matthewmaloof/WeatherPulse/assets/148370987/4354c631-fa00-4923-8624-14c04bcdc3c6
+https://github.com/matthewmaloof/WeatherPulse/assets/148370987/bf2eab7b-5757-4a80-8957-6ba5304d3ebf
 
 ## Features
 
